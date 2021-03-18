@@ -1,7 +1,9 @@
 <template>
   <div class="hello">
     <div class="background-image">
-      <img src="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"/>
+      <img
+        src="https://images.unsplash.com/photo-1532712938310-34cb3982ef74?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
+      />
       <h1>{{ msg }}</h1>
     </div>
     <div class="helloContainer">
@@ -32,11 +34,9 @@ export default {
 h2 {
   margin-top: 30px;
 }
-p {
-  text-align: justify;
-  margin: 1em 3em 3em 3em;
-  line-height: 4;
-  font-size: 1.25em;
+.helloContainer p {
+  text-align: left;
+  margin: 2em 1em 2em 1em;
+  line-height: 2;
 }
-
 </style>

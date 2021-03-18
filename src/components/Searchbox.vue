@@ -78,10 +78,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
 }
 
