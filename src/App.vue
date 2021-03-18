@@ -107,6 +107,11 @@ ul {
   #nav a {
     padding: 5px 75px;
   }
+  .helloContainer p {
+  text-align: left;
+  margin: 2em 1em 2em 1em;
+  line-height: 2;
+}
 }
 
 /* Desktop Styles */

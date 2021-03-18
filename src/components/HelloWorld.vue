@@ -34,9 +34,5 @@ export default {
 h2 {
   margin-top: 30px;
 }
-.helloContainer p {
-  text-align: left;
-  margin: 2em 1em 2em 1em;
-  line-height: 2;
-}
+
 </style>
