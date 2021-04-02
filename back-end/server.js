@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const multer = require('multer');
 
 const app = express();
 
@@ -13,128 +14,212 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 // connect to the database
-mongoose.connect('mongodb://localhost:27017/todo', {
+mongoose.connect('mongodb://localhost:27017/wedding-photographers', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
-
-// Create a scheme for projects
-const projectSchema = new mongoose.Schema({
-    name: String,
-    color: String
+//Upload images to path
+const upload = multer({
+    dest: '../front-end/public/images/',
+    limits: {
+        fileSize: 10000000
+    }
 });
 
-// Create a model for projects
-const Project = mongoose.model('Project', projectSchema);
+// Upload a photo. Uses the multer middleware for the upload and then returns
+// the path where the photo is stored in the file system.
+app.post('/api/photos', upload.single('photo'), async(req, res) => {
+    // Just a safety check
+    if (!req.file) {
+        return res.sendStatus(400);
+    }
+    res.send({
+        path: "/images/" + req.file.filename
+    });
+});
 
-// Create a project
-app.post('/api/projects', async(req, res) => {
-    const project = new Project({
-        name: req.body.name,
-        color: req.body.color
+// Create a scheme for a type of photographer
+const photographerTypeSchema = new mongoose.Schema({
+    type: String,
+});
+
+// Create a model for types of photographers 
+const Type = mongoose.model('Type', photographerTypeSchema);
+
+// Schema for photographers
+const photographerSchema = new mongoose.Schema({
+    type: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Type'
+    },
+    name: String,
+    price: String,
+    path: String
+});
+
+// Model for photographer
+const Photographer = mongoose.model('Photographer', photographerSchema);
+
+//Schema for reviews
+const reviewsSchema = new mongoose.Schema({
+    photographer: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Photographer'
+    },
+    name: String,
+    text: String,
+    star: Number
+});
+
+// Model for reviews
+const Review = mongoose.model('Review', reviewsSchema);
+
+//Create review for photographer 
+app.post('/api/photographers/:photographerID/reviews', async(req, res) => {
+    try {
+        let photographer = await Photographer.findOne({ _id: req.params.photographerID });
+        // console.log(photographer);
+        if (!photographer) {
+            res.send(404);
+            return;
+        }
+        let review = new Review({
+            photographer: photographer,
+            name: req.body.name,
+            text: req.body.text,
+            star: req.body.star
+        });
+        await review.save();
+        res.send(review);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+// get a list of reviews for a photographer:
+app.get('/api/photographers/:photographerID/reviews', async(req, res) => {
+    try {
+        let photographer = await Photographer.findOne({ _id: req.params.photographerID });
+        console.log(photographer);
+        if (!photographer) {
+            res.send(404);
+            return;
+        }
+        let reviews = await Review.find({ photographer: photographer });
+        console.log(reviews);
+        res.send(reviews);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+
+// Create a type of photographers
+app.post('/api/type', async(req, res) => {
+    const type = new Type({
+        type: req.body.type,
     });
     try {
-        await project.save();
-        res.send(project);
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
-    }
-});
-// Get a list of all projects
-app.get('/api/projects', async(req, res) => {
-    try {
-        let projects = await Project.find();
-        res.send(projects);
+        await type.save();
+        res.send(type);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
     }
 });
 
-// Schema for items
-const itemSchema = new mongoose.Schema({
-    project: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Project'
-    },
-    text: String,
-    completed: Boolean,
+// Get a list of all types of photographers 
+app.get('/api/types', async(req, res) => {
+    try {
+        let types = await Type.find();
+        res.send(types);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
 });
 
-// Model for items
-const Item = mongoose.model('Item', itemSchema);
-
-//Adding item to project
-app.post('/api/projects/:projectID/items', async(req, res) => {
+//Adding photographer to type
+app.post('/api/types/:typeID/photographers', async(req, res) => {
     try {
-        let project = await Project.findOne({ _id: req.params.projectID });
-        if (!project) {
+        let type = await Type.findOne({ _id: req.params.typeID });
+        if (!type) {
             res.send(404);
             return;
         }
-        let item = new Item({
-            project: project,
-            text: req.body.text,
-            completed: req.body.completed,
+        let photographer = new Photographer({
+            type: type,
+            name: req.body.name,
+            price: req.body.price,
+            path: req.body.path
         });
-        await item.save();
-        res.send(item);
+        await photographer.save();
+        res.send(photographer);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
     }
 });
 
-// Let's now add an endpoint to get a list of items for a project:
-app.get('/api/projects/:projectID/items', async(req, res) => {
+// Get a list of all photographers 
+app.get('/api/photographers', async(req, res) => {
     try {
-        let project = await Project.findOne({ _id: req.params.projectID });
-        if (!project) {
-            res.send(404);
-            return;
-        }
-        let items = await Item.find({ project: project });
-        res.send(items);
+        let photographers = await Photographer.find();
+        res.send(photographers);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
     }
 });
 
-//Update item
-app.put('/api/projects/:projectID/items/:itemID', async(req, res) => {
+// get a list of photographers for a type:
+app.get('/api/types/:typeID/photographers', async(req, res) => {
     try {
-        let item = await Item.findOne({ _id: req.params.itemID, project: req.params.projectID });
-        if (!item) {
+        let type = await Type.findOne({ _id: req.params.typeID });
+        if (!type) {
             res.send(404);
             return;
         }
-        item.text = req.body.text;
-        item.completed = req.body.completed;
-        await item.save();
-        res.send(item);
+        let photographers = await Photographer.find({ type: type });
+        res.send(photographers);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
     }
 });
 
-//Delete Item  
-app.delete('/api/projects/:projectID/items/:itemID', async(req, res) => {
+//Update Photographer
+app.put('/api/types/:typeID/photographers/:photographerID', async(req, res) => {
     try {
-        let item = await Item.findOne({ _id: req.params.itemID, project: req.params.projectID });
-        if (!item) {
+        let photographer = await Photographer.findOne({ _id: req.params.photographerID, type: req.params.typeID });
+        if (!photographer) {
             res.send(404);
             return;
         }
-        await item.delete();
+        photographer.name = req.body.name;
+        photographer.price = req.body.price;
+        await photographer.save();
+        res.send(photographer);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+
+//Delete Photographer  
+app.delete('/api/types/:typeID/photographers/:photographerID', async(req, res) => {
+    try {
+        let photographer = await Photographer.findOne({ _id: req.params.photographerID, type: req.params.typeID });
+        if (!photographer) {
+            res.send(404);
+            return;
+        }
+        await photographer.delete();
         res.sendStatus(200);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
     }
 });
-
 
 app.listen(3001, () => console.log('Server listening on port 3001!'));

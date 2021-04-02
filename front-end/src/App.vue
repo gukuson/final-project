@@ -8,7 +8,7 @@
     </div>
     <router-view />
     <div id="footer">
-      <a href="https://github.com/gukuson/WeddingOneStop" target="_blank"
+      <a href="https://github.com/gukuson/creative-project-4.git" target="_blank"
         >Github</a
       >
     </div>
@@ -20,7 +20,6 @@
   margin: 0;
 }
 .background-image {
-  position: relative;
   text-align: center;
 }
 .background-image img {
@@ -122,7 +121,8 @@ ul {
     transform: translate(-50%, -50%);
   }
   #nav ul {
-    padding: 27px 41px;
+    padding-top: 30px;
+    padding-bottom: 30px;
   }
   .helloContainer p {
     text-align: justify;
