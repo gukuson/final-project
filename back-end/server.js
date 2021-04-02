@@ -96,6 +96,42 @@ app.post('/api/photographers/:photographerID/reviews', async(req, res) => {
         res.sendStatus(500);
     }
 });
+
+//Update Review
+app.put('/api/photographers/:photographerID/reviews/:reviewID', async(req, res) => {
+    try {
+        let review = await Review.findOne({ _id: req.params.reviewID, photographer: req.params.photographerID });
+        if (!review) {
+            res.send(404);
+            return;
+        }
+        review.name = req.body.name;
+        review.text = req.body.text;
+        review.star = req.body.star;
+        await review.save();
+        res.send(review);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+
+//Delete Review  
+app.delete('/api/photographers/:photographerID/reviews/:reviewID', async(req, res) => {
+    try {
+        let review = await Review.findOne({ _id: req.params.reviewID, photographer: req.params.photographerID });
+        if (!review) {
+            res.send(404);
+            return;
+        }
+        await review.delete();
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+});
+
 // get a list of reviews for a photographer:
 app.get('/api/photographers/:photographerID/reviews', async(req, res) => {
     try {
@@ -113,6 +149,7 @@ app.get('/api/photographers/:photographerID/reviews', async(req, res) => {
         res.sendStatus(500);
     }
 });
+
 
 // Create a type of photographers
 app.post('/api/type', async(req, res) => {

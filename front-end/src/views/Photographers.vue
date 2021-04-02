@@ -33,18 +33,19 @@
       </h1>
       <p></p>
       <div
-        class="photopgraher"
+        class="photographer"
         v-for="photographer in photographers"
         :key="photographer.id"
       >
         <h2>{{ photographer.name }}</h2>
+        <h3>Base Price: {{photographer.price}}</h3>
         <img :src="photographer.path" />
         <div @click="showReviews(photographer)">
           <h3>
             <a><u>Click Here to See Reviews</u></a>
           </h3>
         </div>
-        <div class="reviews" v-if="showRev">
+        <div class="reviews" v-if="photographer._id === photographerId">
           <h2>Reviews</h2>
           <div
             class="review"
@@ -84,7 +85,7 @@ export default {
       reviews: [],
       findTitle: "",
       findType: null,
-      showRev: false,
+      photographerId: "",
     };
   },
   computed: {
@@ -142,7 +143,7 @@ export default {
       this.chosenType = true;
     },
     showReviews(photographer) {
-      this.showRev = !this.showRev;
+      this.photographerId = photographer._id;
       this.getReviews(photographer);
     },
   },
@@ -150,12 +151,21 @@ export default {
 </script>
 
 <style scope>
+.display-container h1{
+  display: block;
+}
+.display-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 .add {
   margin: 0;
 }
 .photopgraher img {
   max-width: 400px;
 }
+
 /* Suggestions */
 .suggestions {
   width: 200px;
@@ -184,7 +194,18 @@ h1 {
 .photographer {
   margin: 10px;
   margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
 }
+
+.photographer h2,
+.photographer h3,
+.photographer img {
+  padding-bottom: 1em;
+}
+
+
 .dropdown input {
   width: 195px;
   height: 30px;

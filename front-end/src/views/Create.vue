@@ -279,20 +279,6 @@ p {
 h1 {
   width: 100%;
 }
-.photographers {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.photographer {
-  margin: 10px;
-  margin-top: 50px;
-  width: 200px;
-}
-.image img {
-  width: 100%;
-}
 .info p {
   font-family: "Oswald", sans-serif !important;
 }
