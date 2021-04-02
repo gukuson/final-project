@@ -1,8 +1,10 @@
 <template>
   <div class="create">
-    <h1>Add Photographer</h1>
-    <div class="add">
+    <h1>Add/Edit/Delete Photographer</h1>
+    <div class="center-button">
       <button @click="showAdd()">Add Photographer</button>
+    </div>
+    <div class="add">
       <div class="add-form" v-if="showAddP">
         <div class="form">
           <input v-model="name" placeholder="Name" />
@@ -37,14 +39,17 @@
         <input v-model="typeName" placeholder="New Photographer Type" />
         <button @click="addType">Add</button>
       </div>
-      <div class="upload" v-if="addPhotographer">
+      
+    </div>
+    <div class="upload" v-if="addPhotographer">
         <h2>{{ addPhotographer.name }}</h2>
         <h2>Base Price: {{ addPhotographer.price }}</h2>
         <img :src="addPhotographer.path" />
       </div>
+    <div class="center-button">
+      <button @click="showEditDelete">Edit/Delete Photographer</button>
     </div>
     <div class="edit">
-      <button @click="showEditDelete">Edit/Delete Photographer</button>
       <div class="edit-form" v-if="showED">
         <input v-model="findTitle" placeholder="Search" />
         <div class="suggestions" v-if="photographer_suggestions.length > 0">
@@ -200,11 +205,14 @@ export default {
       this.findPhotographer = photographer;
     },
     async editPhotographer(photographer) {
-        try {
-        await axios.put(`/api/types/${photographer.type}/photographers/` + photographer._id, {
+      try {
+        await axios.put(
+          `/api/types/${photographer.type}/photographers/` + photographer._id,
+          {
             name: this.name,
-            price: this.price
-        });
+            price: this.price,
+          }
+        );
         this.findPhotographer = null;
         this.name = "";
         this.price = "";
@@ -216,7 +224,9 @@ export default {
     },
     async deletePhotographer(photographer) {
       try {
-        await axios.delete(`/api/types/${photographer.type}/photographers/` + photographer._id);
+        await axios.delete(
+          `/api/types/${photographer.type}/photographers/` + photographer._id
+        );
         this.findPhotographer = null;
         this.name = "";
         this.price = "";
@@ -231,9 +241,16 @@ export default {
 </script>
 
 <style scope>
+.center-button {
+  display: flex;
+  justify-content: center;
+}
 .create .add,
 .create .edit {
   margin-left: 3em;
+}
+.create h1 {
+  margin-top: 100px;
 }
 /* Uploaded images */
 .upload h2 {

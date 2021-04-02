@@ -38,23 +38,59 @@
         :key="photographer.id"
       >
         <h2>{{ photographer.name }}</h2>
-        <h3>Base Price: {{photographer.price}}</h3>
+        <h3>Base Price: {{ photographer.price }}</h3>
         <img :src="photographer.path" />
         <div @click="showReviews(photographer)">
           <h3>
             <a><u>Click Here to See Reviews</u></a>
           </h3>
         </div>
-        <div class="reviews" v-if="photographer._id === photographerId">
-          <h2>Reviews</h2>
-          <div
-            class="review"
-            v-for="review in reviews"
-            :key="review.id"
-          >
-          <p>{{review.text}}</p>
-          <p><i>-{{review.name}}</i></p>
-
+        <div class="reviews" v-if="photographer._id === photographerId && showReviewsBool">
+          <div v-if="reviews.length > 0">
+            <div class="review" v-for="review in reviews" :key="review.id">
+              <div v-if="review._id === reviewId">
+                <div class="review-box">
+                  <input v-model="reviewName" />
+                  <input v-model="reviewStar" style="margin-top: 4px" />
+                </div>
+                <div class="review-box">
+                  <textarea v-model="reviewText" />
+                </div>
+                <button @click="editReview(review)">Edit</button>
+              </div>
+              <div v-else>
+                <p>{{ review.text }}</p>
+                <p>
+                  <i>-{{ review.name }} (Rating: {{review.star}})</i>
+                </p>
+                <div class="review-buttons">
+                  <button @click="revealEdit(review)">Edit</button>
+                  <button @click="deleteReview(review)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else>
+            <p>There are no reviews yet</p>
+          </div>
+          <div v-if="showAddReview">
+          <h3>Add a Review:</h3>
+          <div class="add-reviews">
+            <div class="review-box">
+              <input v-model="reviewName" placeholder="Name" />
+              <input
+                v-model="reviewStar"
+                placeholder="Rating 1-5"
+                style="margin-top: 4px"
+              />
+            </div>
+            <div class="review-box">
+              <textarea v-model="reviewText" placeholder="Your Review" />
+            </div>
+          </div>
+          <div class="review-button">
+            <button @click="addReview(photographerId)">Add Review</button>
+          </div>
           </div>
         </div>
       </div>
@@ -85,7 +121,14 @@ export default {
       reviews: [],
       findTitle: "",
       findType: null,
+      currPhotographer: null,
+      reviewId: "",
       photographerId: "",
+      reviewName: "",
+      reviewStar: "",
+      reviewText: "",
+      showAddReview: true,
+      showReviewsBool: false
     };
   },
   computed: {
@@ -127,7 +170,7 @@ export default {
           `/api/photographers/${photographer._id}/reviews`
         );
         this.reviews = response.data;
-        console.log(this.photographers);
+        this.currPhotographer = photographer;
         return true;
       } catch (error) {
         // console.log(error);
@@ -143,15 +186,87 @@ export default {
       this.chosenType = true;
     },
     showReviews(photographer) {
+      this.showReviewsBool = !this.showReviewsBool;
       this.photographerId = photographer._id;
       this.getReviews(photographer);
+    },
+    revealEdit(review) {
+      this.reviewId = review._id;
+      this.reviewName = review.name;
+      this.reviewText = review.text;
+      this.reviewStar = review.star;
+      this.showAddReview = false;
+    },
+    async editReview(review) {
+      try {
+        await axios.put(
+          `/api/photographers/${this.photographerId}/reviews/` + review._id,
+          {
+            name: this.reviewName,
+            text: this.reviewText,
+            star: this.reviewStar,
+          }
+        );
+        this.reviewId = "";
+
+        this.getReviews(this.currPhotographer);
+        this.reviewName = "";
+        this.reviewText = "";
+        this.reviewStar = "";
+        this.showAddReview = true;
+        return true;
+      } catch (error) {
+        // console.log(error);
+      }
+    },
+    async deleteReview(review) {
+      try {
+        console.log("delete review");
+        await axios.delete(
+          `/api/photographers/${this.photographerId}/reviews/` + review._id
+        );
+        this.getReviews(this.currPhotographer);
+        return true;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async addReview(photographerId) {
+      try {
+        await axios.post(`/api/photographers/${photographerId}/reviews`, {
+          name: this.reviewName,
+          text: this.reviewText,
+          star: this.reviewStar,
+        });
+        this.getReviews(this.currPhotographer);
+        this.reviewName = "";
+        this.reviewText = "";
+        this.reviewStar = "";
+        return true;
+      } catch (error) {
+        // console.log(error);
+      }
     },
   },
 };
 </script>
 
 <style scope>
-.display-container h1{
+.review-buttons {
+  display: flex;
+}
+.review-buttons button {
+  margin-left: 53px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.add a {
+  color: #424f5c;
+}
+.add a:hover {
+  color: #a3c1df;
+}
+.display-container h1 {
   display: block;
 }
 .display-container {
@@ -161,6 +276,7 @@ export default {
 }
 .add {
   margin: 0;
+  margin-bottom: 50px;
 }
 .photopgraher img {
   max-width: 400px;
@@ -205,7 +321,6 @@ h1 {
   padding-bottom: 1em;
 }
 
-
 .dropdown input {
   width: 195px;
   height: 30px;
@@ -215,5 +330,18 @@ h1 {
 }
 .info p {
   font-family: "Oswald", sans-serif !important;
+}
+.add-reviews {
+  display: flex;
+}
+.review-box {
+  display: flex;
+  flex-direction: column;
+}
+.review-box input {
+  max-width: 100px;
+}
+.review-box textarea {
+  height: 40px;
 }
 </style>
