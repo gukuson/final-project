@@ -9,7 +9,7 @@
     <router-view />
     <div id="footer">
       <a href="https://github.com/gukuson/creative-project-4.git" target="_blank"
-        >Github</a
+        >Github 30 Mins</a
       >
     </div>
   </div>
