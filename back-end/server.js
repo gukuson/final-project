@@ -10,6 +10,12 @@ const cookieSession = require('cookie-session');
 
 const app = express();
 
+// connect to the database
+mongoose.connect('mongodb://localhost:27017/wedding-photographers', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
 app.use(cookieSession({
     name: 'session',
     keys: [
@@ -19,8 +25,6 @@ app.use(cookieSession({
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
-
-
 
 app.use(cookieParser());
 
@@ -32,11 +36,7 @@ app.use(bodyParser.urlencoded({
 // parse application/json
 app.use(bodyParser.json());
 
-// connect to the database
-mongoose.connect('mongodb://localhost:27017/wedding-photographers', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+
 //Upload images to path
 const upload = multer({
     dest: '../front-end/public/images/',

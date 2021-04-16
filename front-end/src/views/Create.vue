@@ -1,89 +1,88 @@
 <template>
   <div class="create">
     <div class="create-forms" v-if="user">
-    <h1>Add/Edit/Delete Photographer</h1>
-    <div class="center-button">
-      <button @click="showAdd()">Add Photographer</button>
-    </div>
-    <div class="add">
-      <div class="add-form" v-if="showAddP">
-        <div class="form">
-          <input v-model="name" placeholder="Name" />
-          <p></p>
-          <input v-model="price" placeholder="Price of base package" />
-          <p></p>
-          <input type="file" name="photo" @change="fileChanged" />
-          <div class="select-type" v-if="!chosenType">
-            <p>Choose your photographer type</p>
-            <div class="suggestions" v-if="suggestions.length > 0">
-              <div
-                class="suggestion"
-                v-for="s in suggestions"
-                :key="s.id"
-                @click="selectTypePhotographer(s)"
-              >
-                {{ s.type }}
+      <h1>Add/Edit/Delete Photographer</h1>
+      <div class="center-button">
+        <button @click="showAdd()">Add Photographer</button>
+      </div>
+      <div class="add">
+        <div class="add-form" v-if="showAddP">
+          <div class="form">
+            <input v-model="name" placeholder="Name" />
+            <p></p>
+            <input v-model="price" placeholder="Price of base package" />
+            <p></p>
+            <input type="file" name="photo" @change="fileChanged" />
+            <div class="select-type" v-if="!chosenType">
+              <p>Choose your photographer type</p>
+              <div class="suggestions" v-if="suggestions.length > 0">
+                <div
+                  class="suggestion"
+                  v-for="s in suggestions"
+                  :key="s.id"
+                  @click="selectTypePhotographer(s)"
+                >
+                  {{ s.type }}
+                </div>
               </div>
             </div>
-          </div>
-          <div v-else>
-            <div class="select-type">
-              <p>Type of Photographer: {{ findType.type }}</p>
+            <div v-else>
+              <div class="select-type">
+                <p>Type of Photographer: {{ findType.type }}</p>
+              </div>
             </div>
+            <button @click="upload">Add</button>
+            <p>Is your type of photography not here?</p>
+            <button @click="switchType">Add Photography Type</button>
           </div>
-          <button @click="upload">Add</button>
-          <p>Is your type of photography not here?</p>
-          <button @click="switchType">Add Photography Type</button>
+        </div>
+        <div class="add-type" v-if="newType">
+          <input v-model="typeName" placeholder="New Photographer Type" />
+          <button @click="addType">Add</button>
         </div>
       </div>
-      <div class="add-type" v-if="newType">
-        <input v-model="typeName" placeholder="New Photographer Type" />
-        <button @click="addType">Add</button>
-      </div>
-      
-    </div>
-    <div class="upload" v-if="addPhotographer">
+      <div class="upload" v-if="addPhotographer">
         <h2>{{ addPhotographer.name }}</h2>
         <h2>Base Price: {{ addPhotographer.price }}</h2>
         <img :src="addPhotographer.path" />
       </div>
-    <div class="center-button">
-      <button @click="showEditDelete">Edit/Delete Photographer</button>
-    </div>
-    <div class="edit">
-      <div class="edit-form" v-if="showED">
-        <input v-model="findTitle" placeholder="Search" />
-        <div class="suggestions" v-if="photographer_suggestions.length > 0">
-          <div
-            class="suggestion"
-            v-for="s in photographer_suggestions"
-            :key="s.id"
-            @click="selectPhotographer(s)"
-          >
-            {{ s.name }}
+      <div class="center-button">
+        <button @click="showEditDelete">Edit/Delete Photographer</button>
+      </div>
+      <div class="edit">
+        <div class="edit-form" v-if="showED">
+          <input v-model="findTitle" placeholder="Search" />
+          <div class="suggestions" v-if="photographer_suggestions.length > 0">
+            <div
+              class="suggestion"
+              v-for="s in photographer_suggestions"
+              :key="s.id"
+              @click="selectPhotographer(s)"
+            >
+              {{ s.name }}
+            </div>
           </div>
+          <input v-model="name" />
+          <p></p>
+          <input v-model="price" />
+          <p></p>
+          <button @click="editPhotographer(findPhotographer)">Edit</button>
+          <button @click="deletePhotographer(findPhotographer)">Delete</button>
         </div>
-        <input v-model="name" />
-        <p></p>
-        <input v-model="price" />
-        <p></p>
-        <button @click="editPhotographer(findPhotographer)">Edit</button>
-        <button @click="deletePhotographer(findPhotographer)">Delete</button>
       </div>
     </div>
-    </div>
-    
-    <Login v-else/>
+
+    <Login v-else />
   </div>
 </template>
 
 <script>
-import Login from '@/components/Login.vue';
+import Login from "@/components/Login.vue";
 import axios from "axios";
 export default {
   name: "Create",
   components: {
-    Login
+    Login,
   },
   data() {
     return {
@@ -112,10 +111,12 @@ export default {
       return this.$root.$data.user;
     },
     photographer_suggestions() {
-      let photographers = this.photographers.filter((photographers) =>
-        photographers.name
-          .toLowerCase()
-          .startsWith(this.findTitle.toLowerCase()) && photographers.user._id === this.$root.$data.user._id
+      let photographers = this.photographers.filter(
+        (photographers) =>
+          photographers.name
+            .toLowerCase()
+            .startsWith(this.findTitle.toLowerCase()) &&
+          photographers.user._id === this.$root.$data.user._id
       );
       return photographers.sort((a, b) => a.photographers > b.photographers);
     },
@@ -236,6 +237,7 @@ export default {
         // console.log(error);
       }
     },
+
   },
 };
 </script>
@@ -299,5 +301,4 @@ h1 {
 .info p {
   font-family: "Oswald", sans-serif !important;
 }
-
 </style>

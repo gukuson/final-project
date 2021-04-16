@@ -97,7 +97,10 @@
             </div>
           </div>
           <div v-else-if="user === null" class="add">
-            <h4>You need to be signed in to add a review. Sign in <router-link to="/create">Here</router-link></h4>
+            <h4>
+              You need to be signed in to add a review. Sign in
+              <router-link to="/create">Here</router-link>
+            </h4>
           </div>
         </div>
       </div>

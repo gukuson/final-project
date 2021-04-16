@@ -14,9 +14,7 @@
     </div>
     <router-view />
     <div id="footer">
-      <a
-        href="https://github.com/gukuson/final-project.git"
-        target="_blank"
+      <a href="https://github.com/gukuson/final-project.git" target="_blank"
         >Github Time Developing: 6 Hours</a
       >
     </div>
@@ -27,6 +25,14 @@
 import axios from "axios";
 export default {
   name: "Create",
+  async created() {
+    try {
+      let response = await axios.get("/api/users");
+      this.$root.$data.user = response.data.user;
+    } catch (error) {
+      this.$root.$data.user = null;
+    }
+  },
   computed: {
     user() {
       return this.$root.$data.user;
