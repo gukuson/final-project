@@ -15,7 +15,7 @@
     <router-view />
     <div id="footer">
       <a href="https://github.com/gukuson/final-project.git" target="_blank"
-        >Github Time Developing: 6 Hours</a
+        >Github - Time Developing: 7 Hours</a
       >
     </div>
   </div>
