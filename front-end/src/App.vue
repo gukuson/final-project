@@ -15,7 +15,7 @@
     <router-view />
     <div id="footer">
       <a
-        href="https://github.com/gukuson/creative-project-4.git"
+        href="https://github.com/gukuson/final-project.git"
         target="_blank"
         >Github Time Developing: 6 Hours</a
       >
