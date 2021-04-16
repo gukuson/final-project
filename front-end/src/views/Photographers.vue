@@ -45,13 +45,15 @@
             <a><u>Click Here to See Reviews</u></a>
           </h3>
         </div>
-        <div class="reviews" v-if="photographer._id === photographerId && showReviewsBool">
+        <div
+          class="reviews"
+          v-if="photographer._id === photographerId && showReviewsBool"
+        >
           <div v-if="reviews.length > 0">
             <div class="review" v-for="review in reviews" :key="review.id">
-              <div v-if="review._id === reviewId">
+              <div v-if="review._id === reviewId && user">
                 <div class="review-box">
-                  <input v-model="reviewName" />
-                  <input v-model="reviewStar" style="margin-top: 4px" />
+                  <input v-model="reviewStar" style="margin: 0px" />
                 </div>
                 <div class="review-box">
                   <textarea v-model="reviewText" />
@@ -61,11 +63,18 @@
               <div v-else>
                 <p>{{ review.text }}</p>
                 <p>
-                  <i>-{{ review.name }} (Rating: {{review.star}})</i>
+                  <i
+                    >-{{ review.user.firstName }} (Rating: {{ review.star }})</i
+                  >
                 </p>
-                <div class="review-buttons">
-                  <button @click="revealEdit(review)">Edit</button>
-                  <button @click="deleteReview(review)">Delete</button>
+                <div v-if="user">
+                  <div
+                    v-if="user._id === review.user._id"
+                    class="review-buttons"
+                  >
+                    <button @click="revealEdit(review)">Edit</button>
+                    <button @click="deleteReview(review)">Delete</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -73,40 +82,26 @@
           <div v-else>
             <p>There are no reviews yet</p>
           </div>
-          <div v-if="showAddReview">
-          <h3>Add a Review:</h3>
-          <div class="add-reviews">
-            <div class="review-box">
-              <input v-model="reviewName" placeholder="Name" />
-              <input
-                v-model="reviewStar"
-                placeholder="Rating 1-5"
-                style="margin-top: 4px"
-              />
+          <div v-if="showAddReview && user">
+            <h3>Add a Review:</h3>
+            <div class="add-reviews">
+              <div class="review-box">
+                <textarea v-model="reviewText" placeholder="Your Review" />
+              </div>
+              <div class="review-box">
+                <input v-model="reviewStar" placeholder="Rating 1-5" />
+              </div>
             </div>
-            <div class="review-box">
-              <textarea v-model="reviewText" placeholder="Your Review" />
+            <div class="review-button">
+              <button @click="addReview(photographerId)">Add Review</button>
             </div>
           </div>
-          <div class="review-button">
-            <button @click="addReview(photographerId)">Add Review</button>
-          </div>
+          <div v-else-if="user === null" class="add">
+            <h4>You need to be signed in to add a review. Sign in <router-link to="/create">Here</router-link></h4>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- <div class="photographers">
-      <div class="photographer" v-for="photographer in photographers" :key="photographer.id">
-        <div class="info">
-          <h1>{{ photographer.first_name }} {{photographer.last_name}}</h1>
-          <p>Average Wedding Bundle: {{ photographer.photographer_price }}</p>
-        </div>
-        <div class="image">
-          <img :src="photographer.image_photographer" />
-        </div>
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -124,11 +119,10 @@ export default {
       currPhotographer: null,
       reviewId: "",
       photographerId: "",
-      reviewName: "",
       reviewStar: "",
       reviewText: "",
       showAddReview: true,
-      showReviewsBool: false
+      showReviewsBool: false,
     };
   },
   computed: {
@@ -137,6 +131,9 @@ export default {
         type.type.toLowerCase().startsWith(this.findTitle.toLowerCase())
       );
       return types.sort((a, b) => a.types > b.types);
+    },
+    user() {
+      return this.$root.$data.user;
     },
   },
   created() {
@@ -234,7 +231,7 @@ export default {
     async addReview(photographerId) {
       try {
         await axios.post(`/api/photographers/${photographerId}/reviews`, {
-          name: this.reviewName,
+          name: this.user.username,
           text: this.reviewText,
           star: this.reviewStar,
         });
@@ -340,6 +337,7 @@ h1 {
 }
 .review-box input {
   max-width: 100px;
+  margin-left: 5px;
 }
 .review-box textarea {
   height: 40px;

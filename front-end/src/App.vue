@@ -4,16 +4,46 @@
       <ul>
         <li><router-link to="/">Home</router-link></li>
         <li><router-link to="/photographers">Photographers</router-link></li>
+        <li><router-link to="/create">Dashboard</router-link></li>
+        <div v-if="user">
+          <a @click="logout"
+            >{{ user.firstName }} {{ user.lastName }} - Logout
+          </a>
+        </div>
       </ul>
     </div>
     <router-view />
     <div id="footer">
-      <a href="https://github.com/gukuson/creative-project-4.git" target="_blank"
-        >Github 30 Mins</a
+      <a
+        href="https://github.com/gukuson/creative-project-4.git"
+        target="_blank"
+        >Github Time Developing: 6 Hours</a
       >
     </div>
   </div>
 </template>
+
+<script>
+import axios from "axios";
+export default {
+  name: "Create",
+  computed: {
+    user() {
+      return this.$root.$data.user;
+    },
+  },
+  methods: {
+    async logout() {
+      try {
+        await axios.delete("/api/users");
+        this.$root.$data.user = null;
+      } catch (error) {
+        this.$root.$data.user = null;
+      }
+    },
+  },
+};
+</script>
 
 <style>
 * {
@@ -69,6 +99,15 @@ ul {
 #nav a.router-link-exact-active {
   color: #424f5c;
 }
+#nav div {
+  position: absolute;
+  display: inline-block;
+  right: 0;
+}
+#nav div a:hover {
+  background-color: rgb(231, 228, 228);
+  color: grey;
+}
 #footer {
   background-color: #7c8981;
   height: 60px;
@@ -86,7 +125,7 @@ ul {
   color: #8c9caa;
 }
 /* Mobile Tablet Styles */
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 697px) {
   .dresses,
   .photographers {
     flex-direction: column;
@@ -105,15 +144,22 @@ ul {
   #nav a {
     padding: 5px 75px;
   }
+  #nav div {
+    position: static;
+  }
   .helloContainer p {
-  text-align: left;
-  margin: 2em 1em 2em 1em;
-  line-height: 2;
-}
+    text-align: left;
+    margin: 2em 1em 2em 1em;
+    line-height: 2;
+  }
+  .set-flex {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 /* Desktop Styles */
-@media only screen and (min-width: 601px) {
+@media only screen and (min-width: 698px) {
   .wrapper {
     position: absolute;
     top: 60%;
@@ -129,6 +175,9 @@ ul {
     margin: 1em 3em 3em 3em;
     line-height: 4;
     font-size: 1.25em;
+  }
+  .set-flex {
+    display: flex;
   }
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
   <div class="create">
+    <div class="create-forms" v-if="user">
     <h1>Add/Edit/Delete Photographer</h1>
     <div class="center-button">
       <button @click="showAdd()">Add Photographer</button>
@@ -70,13 +71,20 @@
         <button @click="deletePhotographer(findPhotographer)">Delete</button>
       </div>
     </div>
+    </div>
+    
+    <Login v-else/>
   </div>
 </template>
 
 <script>
+import Login from '@/components/Login.vue';
 import axios from "axios";
 export default {
   name: "Create",
+  components: {
+    Login
+  },
   data() {
     return {
       name: "",
@@ -100,11 +108,14 @@ export default {
     suggestions() {
       return this.types;
     },
+    user() {
+      return this.$root.$data.user;
+    },
     photographer_suggestions() {
       let photographers = this.photographers.filter((photographers) =>
         photographers.name
           .toLowerCase()
-          .startsWith(this.findTitle.toLowerCase())
+          .startsWith(this.findTitle.toLowerCase()) && photographers.user._id === this.$root.$data.user._id
       );
       return photographers.sort((a, b) => a.photographers > b.photographers);
     },
@@ -139,15 +150,6 @@ export default {
         // console.log(error);
       }
     },
-    async getPhotographers(type) {
-      try {
-        let response = await axios.get(`/api/types/${type._id}/photographers`);
-        this.filteredPhotographers = response.data;
-        return true;
-      } catch (error) {
-        // console.log(error);
-      }
-    },
     async getAllPhotographers() {
       try {
         let response = await axios.get(`/api/photographers`);
@@ -157,11 +159,6 @@ export default {
       } catch (error) {
         // console.log(error);
       }
-    },
-    selectType(type) {
-      this.findTitle = "";
-      this.findType = type;
-      this.getPhotographers(this.findType);
     },
     selectTypePhotographer(type) {
       this.findType = type;
@@ -192,12 +189,15 @@ export default {
         );
         this.showAdd();
         this.addPhotographer = r2.data;
+        this.getAllPhotographers();
       } catch (error) {
         // console.log(error);
       }
     },
     showEditDelete() {
       this.showED = !this.showED;
+      this.name = "";
+      this.price = "";
     },
     selectPhotographer(photographer) {
       this.name = photographer.name;
@@ -263,7 +263,7 @@ export default {
 .create {
   min-height: 400px;
 }
-button {
+.create-forms button {
   display: flex;
   margin-top: 2em;
   margin-bottom: 1em;
@@ -299,4 +299,5 @@ h1 {
 .info p {
   font-family: "Oswald", sans-serif !important;
 }
+
 </style>

@@ -2,8 +2,27 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const users = require("./users");
+const User = users.model;
+const validUser = users.valid;
+const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
 
 const app = express();
+
+app.use(cookieSession({
+    name: 'session',
+    keys: [
+        'secretValue'
+    ],
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+
+
+app.use(cookieParser());
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({
@@ -52,6 +71,10 @@ const photographerSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Type'
     },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+    },
     name: String,
     price: String,
     path: String
@@ -66,7 +89,10 @@ const reviewsSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Photographer'
     },
-    name: String,
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+    },
     text: String,
     star: Number
 });
@@ -74,8 +100,8 @@ const reviewsSchema = new mongoose.Schema({
 // Model for reviews
 const Review = mongoose.model('Review', reviewsSchema);
 
-//Create review for photographer 
-app.post('/api/photographers/:photographerID/reviews', async(req, res) => {
+//Create review for photographer if signed in
+app.post('/api/photographers/:photographerID/reviews', validUser, async(req, res) => {
     try {
         let photographer = await Photographer.findOne({ _id: req.params.photographerID });
         // console.log(photographer);
@@ -85,7 +111,7 @@ app.post('/api/photographers/:photographerID/reviews', async(req, res) => {
         }
         let review = new Review({
             photographer: photographer,
-            name: req.body.name,
+            user: req.user,
             text: req.body.text,
             star: req.body.star
         });
@@ -97,15 +123,14 @@ app.post('/api/photographers/:photographerID/reviews', async(req, res) => {
     }
 });
 
-//Update Review
-app.put('/api/photographers/:photographerID/reviews/:reviewID', async(req, res) => {
+//Update Review if signed in
+app.put('/api/photographers/:photographerID/reviews/:reviewID', validUser, async(req, res) => {
     try {
         let review = await Review.findOne({ _id: req.params.reviewID, photographer: req.params.photographerID });
         if (!review) {
             res.send(404);
             return;
         }
-        review.name = req.body.name;
         review.text = req.body.text;
         review.star = req.body.star;
         await review.save();
@@ -116,8 +141,8 @@ app.put('/api/photographers/:photographerID/reviews/:reviewID', async(req, res) 
     }
 });
 
-//Delete Review  
-app.delete('/api/photographers/:photographerID/reviews/:reviewID', async(req, res) => {
+//Delete Review if signed in
+app.delete('/api/photographers/:photographerID/reviews/:reviewID', validUser, async(req, res) => {
     try {
         let review = await Review.findOne({ _id: req.params.reviewID, photographer: req.params.photographerID });
         if (!review) {
@@ -141,7 +166,7 @@ app.get('/api/photographers/:photographerID/reviews', async(req, res) => {
             res.send(404);
             return;
         }
-        let reviews = await Review.find({ photographer: photographer });
+        let reviews = await Review.find({ photographer: photographer }).populate('user');
         console.log(reviews);
         res.send(reviews);
     } catch (error) {
@@ -151,8 +176,8 @@ app.get('/api/photographers/:photographerID/reviews', async(req, res) => {
 });
 
 
-// Create a type of photographers
-app.post('/api/type', async(req, res) => {
+// Create a type of photographers if signed in
+app.post('/api/type', validUser, async(req, res) => {
     const type = new Type({
         type: req.body.type,
     });
@@ -176,8 +201,8 @@ app.get('/api/types', async(req, res) => {
     }
 });
 
-//Adding photographer to type
-app.post('/api/types/:typeID/photographers', async(req, res) => {
+//Adding photographer to type if signed in
+app.post('/api/types/:typeID/photographers', validUser, async(req, res) => {
     try {
         let type = await Type.findOne({ _id: req.params.typeID });
         if (!type) {
@@ -186,6 +211,7 @@ app.post('/api/types/:typeID/photographers', async(req, res) => {
         }
         let photographer = new Photographer({
             type: type,
+            user: req.user,
             name: req.body.name,
             price: req.body.price,
             path: req.body.path
@@ -201,7 +227,7 @@ app.post('/api/types/:typeID/photographers', async(req, res) => {
 // Get a list of all photographers 
 app.get('/api/photographers', async(req, res) => {
     try {
-        let photographers = await Photographer.find();
+        let photographers = await Photographer.find().populate('user');
         res.send(photographers);
     } catch (error) {
         console.log(error);
@@ -225,8 +251,8 @@ app.get('/api/types/:typeID/photographers', async(req, res) => {
     }
 });
 
-//Update Photographer
-app.put('/api/types/:typeID/photographers/:photographerID', async(req, res) => {
+//Update Photographer if signed in
+app.put('/api/types/:typeID/photographers/:photographerID', validUser, async(req, res) => {
     try {
         let photographer = await Photographer.findOne({ _id: req.params.photographerID, type: req.params.typeID });
         if (!photographer) {
@@ -243,8 +269,8 @@ app.put('/api/types/:typeID/photographers/:photographerID', async(req, res) => {
     }
 });
 
-//Delete Photographer  
-app.delete('/api/types/:typeID/photographers/:photographerID', async(req, res) => {
+//Delete Photographer if signed in
+app.delete('/api/types/:typeID/photographers/:photographerID', validUser, async(req, res) => {
     try {
         let photographer = await Photographer.findOne({ _id: req.params.photographerID, type: req.params.typeID });
         if (!photographer) {
@@ -259,4 +285,7 @@ app.delete('/api/types/:typeID/photographers/:photographerID', async(req, res) =
     }
 });
 
-app.listen(3001, () => console.log('Server listening on port 3001!'));
+// import the users module and setup its API path
+app.use("/api/users", users.routes);
+
+app.listen(3003, () => console.log('Server listening on port 3003!'));
